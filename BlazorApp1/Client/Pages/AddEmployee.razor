@@ -1,0 +1,49 @@
+﻿@*@page "/add"*@
+@using BlazorApp1.Client.Model;
+
+
+@inject NavigationManager navigationManager
+
+<h1>Add Employee</h1>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="form-group">
+            <label for="emp_id">ID:</label>
+            <input class="form-control" id="emp_id" @bind="@Employee.emp_id" />
+        </div>
+        <div class="form-group">
+            <label for="emp_name">Name:</label>
+            <input class="form-control" id="emp_name" @bind="@Employee.emp_name" />
+        </div>
+        <div class="form-group">
+            <label for="emp_project">Project:</label>
+            <input class="form-control" id="emp_project" @bind="@Employee.emp_project" />
+        </div>
+        <div class="form-group">
+            <label for="emp_salary">Salary:</label>
+            <input class="form-control" id="emp_salary" @bind="@Employee.emp_salary" />
+        </div>
+        <button class="btn btn-primary" @onclick="AddEmployeeFunc">Add Employee</button>
+    </div>
+</div>
+
+@code {
+    private Employee Employee = new Employee();
+    
+
+    [Parameter]
+    public EmployeeServices EmployeeService { get; set; }
+ 
+    [Parameter]
+    public EventCallback<Employee> OnEmployeeAdded { get; set; }
+
+    private async Task AddEmployeeFunc()
+    {
+        //EmployeeService.AddEmployee(Employee);
+        //navigationManager.NavigateTo("/");
+        //EmployeeService.AddEmployee(Employee);
+        await OnEmployeeAdded.InvokeAsync(Employee);
+        navigationManager.NavigateTo("/");
+    }
+}
