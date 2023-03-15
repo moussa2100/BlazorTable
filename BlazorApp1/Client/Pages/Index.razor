@@ -5,171 +5,27 @@
 
 @inject HttpClient httpClient
 
-<PageTitle>Index</PageTitle>
-<style>
-    .bg-yellow {
-        background-color: yellow;
-    }
-</style>
 
+<ComponentTable Emps="@emps"  />
 
-<div class="row">
-    <div class="col-md-3">
-        <div class="form-group mb-2">
-
-            <input type="text" class="form-control" @oninput="UpdateFilterText" placeholder="Search" />
-        </div>
-    </div>
-</div>
-<table class="table">
-    <thead>
-        <tr>
-            <th @onclick="() => UpdateSortColumn(nameof(Employee.emp_id))">
-                ID
-                @if (ColumnName == nameof(Employee.emp_id))
-                {
-                    @if (IsAscending)
-                    {
-                        <i class="bi bi-arrow-down"></i>
-                        UpdateAllData(true);
-                    }
-                    else
-                    {
-                        <i class="bi bi-arrow-up"></i>
-                        UpdateAllData(false);
-                    }
-
-                }
-            </th>
-            <th @onclick="() => UpdateSortColumn(nameof(Employee.emp_name))">
-                Name
-                @if (ColumnName == nameof(Employee.emp_name))
-                {
-                    @if (IsAscending)
-                    {
-                        <i class="bi bi-arrow-down"></i>
-                        UpdateAllData(true);
-                    }
-                    else
-                    {
-                        <i class="bi bi-arrow-up"></i>
-                        UpdateAllData(false);
-                    }
-                }
-
-            </th>
-            <th @onclick="() => UpdateSortColumn(nameof(Employee.emp_project))">
-                Project
-                @if (ColumnName == nameof(Employee.emp_project))
-                {
-                    @if (IsAscending)
-                    {
-                        <i class="bi bi-arrow-down"></i>
-                        UpdateAllData(true);
-                    }
-                    else
-                    {
-                        <i class="bi bi-arrow-up"></i>
-                        UpdateAllData(false);
-                    }
-                }
-            </th>
-            <th @onclick="() => UpdateSortColumn(nameof(Employee.emp_salary))">
-                Salary
-                @if (ColumnName == nameof(Employee.emp_salary))
-                {
-                    @if (IsAscending)
-                    {
-                        <i class="bi bi-arrow-down"></i>
-                        UpdateAllData(true);
-                    }
-                    else
-                    {
-                        <i class="bi bi-arrow-up"></i>
-                        UpdateAllData(false);
-                    }
-                }
-            </th>
-        </tr>
-    </thead>
-
-    <tbody>
-        @foreach (Employee employee in empsLoad)
-        {
-            <tr>
-                <td> @HighlightText(employee.emp_id) </td>
-                <td> @HighlightText(employee.emp_name) </td>
-                <td> @HighlightText(employee.emp_project) </td>
-                <td> @HighlightText(employee.emp_salary.ToString()) </td>
-
-            </tr>
-
-        }
-    </tbody>
-
-</table>
-
-<div class="d-flex justify-content-between align-items-center">
-    <div>
-        Showing @((page - 1) * pageSize + 1)-@((page - 1) * pageSize + @recordsCount) of @recordsCount
-    </div>
-    <div class="d-flex align-items-center">
-        <label for="drp" class="col-auto"> Page Size </label>
-        <select id="drp" class="form-select ms-1 col-auto" @bind="pageSize">
-            <option value="5">5</option>
-            <option value="10">10</option>
-            <option value="15">15</option>
-            <option value="20">20</option>
-        </select>
-    </div>
-    <div>
-        <button class="btn btn-primary" disabled="@(page == 1)" @onclick="firstPage">First</button>
-        <button class="btn btn-primary" disabled="@(page == 1)" @onclick="prevPage">Previous</button>
-        <button class="btn btn-primary" disabled="@(page == pageCount)" @onclick="nextPage">Next</button>
-        <button class="btn btn-primary" disabled="@(page == pageCount)" @onclick="lastPage">Last</button>
-    </div>
-</div>
-
-
-<AddEmployee EmployeeService="@emps" OnEmployeeAdded="HandleEmployeeAdded" />
+@*<T2 Columns="@tableColumns" Rows="@tableRows" />*@
 
 @code {
-    public string ColumnName { get; set; } = "emp_id";
-    public bool IsAscending { get; set; } = true;
-    public string filterText { get; set; }
 
-    //page size
-    public int page = 1;
-    public int pageSize = 5;
-    private int pageCount = 0;
-    private int recordsCount = 0;
-
-    public void firstPage()
-    {
-        page = 1;
-        UpdateAllData();
-    }
-    public void prevPage()
-    {
-        page--;
-        UpdateAllData();
-    }
-    public void nextPage()
-    {
-        page++;
-        UpdateAllData();
-    }
-    public void lastPage()
-    {
-        page = pageCount;
-        UpdateAllData();
-    }
 
 
 
     EmployeeServices emps = new EmployeeServices();
-    List<Employee> empsLoad = new();
 
+    private List<string> tableColumns = new List<string>()
+    {
+        "EmployeeID",
+        "Name",
+        "Project",
+        "Salary"
+    };
+
+    private List<List<object>> tableRows = new List<List<object>>();
 
 
     protected override async Task OnInitializedAsync()
@@ -179,127 +35,27 @@
         string fileContent = await httpClient.GetStringAsync("data3.json");
 
 
-        //empsLoad = JsonConvert.DeserializeObject < List<Employee>>(fileContent);
         List<Employee> loadedFileData = JsonConvert.DeserializeObject<List<Employee>>(fileContent);
 
+        //foreach (Employee employee in loadedFileData)
+        //{
+        //    //emps.AddEmployee(employee);
+        //    var row = new List<object>()
+        //    {
+        //        employee.emp_id,
+        //        employee.emp_name,
+        //        employee.emp_project,
+        //        employee.emp_salary
+        //    };
+
+        //    tableRows.Add(row);
+        //}
         foreach (Employee employee in loadedFileData)
         {
             emps.AddEmployee(employee);
         }
-
-        await UpdateAllData();
     }
 
 
-    public async Task UpdateAllData(bool isAscendingVal = false)
-    {
-
-        //empsLoad = emps.GetAll().Skip((page - 1) * pageSize).Take(pageSize).ToList();
-        if (string.IsNullOrEmpty(filterText))
-        {
-            empsLoad = emps.GetAll().ToList();
-            recordsCount = empsLoad.Count;
-            pageCount = (int)Math.Ceiling((double)empsLoad.Count / pageSize);
-
-            //Manage Sorting before paging
-
-            if (isAscendingVal)
-            {
-                empsLoad = empsLoad.OrderBy(e => e.GetType().GetProperty(ColumnName)?.GetValue(e)).ToList();
-            }
-            else
-            {
-                empsLoad = empsLoad.OrderByDescending(e => e.GetType().GetProperty(ColumnName)?.GetValue(e)).ToList();
-            }
-
-            //------End of sorting
-
-            empsLoad = empsLoad.Skip((page - 1) * pageSize).Take(pageSize).ToList();
-
-        }
-        else
-        {
-            empsLoad = emps.GetAll().Where(c => c.emp_id.ToLower().Contains(filterText) || c.emp_name.ToLower().Contains(filterText) || c.emp_project.ToLower().Contains(filterText) || c.emp_salary.ToString().ToLower().Contains(filterText)).ToList();
-            recordsCount = empsLoad.Count;
-            pageCount = (int)Math.Ceiling((double)recordsCount / pageSize);
-
-            //Manage Sorting before paging
-
-            if (isAscendingVal)
-            {
-                empsLoad = empsLoad.OrderBy(e => e.GetType().GetProperty(ColumnName)?.GetValue(e)).ToList();
-            }
-            else
-            {
-                empsLoad = empsLoad.OrderByDescending(e => e.GetType().GetProperty(ColumnName)?.GetValue(e)).ToList();
-            }
-
-            //------End of sorting
-
-            empsLoad = empsLoad.Skip((page - 1) * pageSize).Take(pageSize).ToList();
-
-        }
-
-        await Task.CompletedTask;
-    }
-
-    private void UpdateSortColumn(string columnName)
-    {
-        if (ColumnName == columnName)
-        {
-            IsAscending = !IsAscending;
-        }
-        else
-        {
-            ColumnName = columnName;
-            IsAscending = true;
-        }
-
-        if (IsAscending)
-        {
-            UpdateAllData(true);
-            //empsLoad = empsLoad.OrderBy(e => e.GetType().GetProperty(ColumnName)?.GetValue(e)).ToList();
-        }
-        else
-        {
-            UpdateAllData(false);
-            //empsLoad = empsLoad.OrderByDescending(e => e.GetType().GetProperty(ColumnName)?.GetValue(e)).ToList();
-        }
-    }
-
-    private void UpdateFilterText(ChangeEventArgs e)
-    {
-        filterText = e.Value.ToString().ToLower();
-
-        UpdateAllData();
-    }
-    private MarkupString HighlightText(string text)
-    {
-        if (string.IsNullOrEmpty(filterText))
-        {
-            return new MarkupString(text);
-        }
-
-        int index = text.IndexOf(filterText, StringComparison.OrdinalIgnoreCase);
-
-        if (index < 0)
-        {
-            return new MarkupString(text);
-        }
-
-        string before = text.Substring(0, index);
-        string match = text.Substring(index, filterText.Length);
-        string after = text.Substring(index + filterText.Length);
-
-        string highlightedText = $"{before}<span class='bg-yellow'>{match}</span>{after}";
-
-        return new MarkupString(highlightedText);
-    }
-
-    private void HandleEmployeeAdded(Employee employee)
-    {
-        emps.AddEmployee(employee);
-    }
-
-
+    
 }

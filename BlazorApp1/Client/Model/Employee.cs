@@ -8,6 +8,7 @@ namespace BlazorApp1.Client.Model
     {
         
         [JsonProperty("emp_id")]
+        [Display(Name ="Employee ID")]
         public string emp_id { get; set; }
 
         [JsonProperty("emp_name")]
